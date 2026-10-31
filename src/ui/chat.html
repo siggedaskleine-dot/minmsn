@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src * data: blob:; style-src 'self' 'unsafe-inline'">
+  <title>Konversation</title>
+  <link rel="stylesheet" href="msn.css">
+  <link rel="stylesheet" href="chat.css">
+</head>
+<body>
+  <div class="titlebar">
+    <span class="logo-slot"></span>
+    <span class="title" id="title">Konversation</span>
+    <div class="winbtns">
+      <button class="winbtn" data-win="minimize" title="Minimera">_</button>
+      <button class="winbtn" data-win="maximize" title="Maximera">□</button>
+      <button class="winbtn close" data-win="close" title="Stäng">×</button>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <button class="toolbtn" id="tb-emoji" title="Välj en känsloikon"><span class="icon">🙂</span>Känsloikoner</button>
+    <button class="toolbtn" id="tb-nudge" title="Skicka en knuff"><span class="icon">📳</span>Knuff</button>
+    <button class="toolbtn" id="tb-fb" title="Öppna i Facebook-fönstret"><span class="icon">🌐</span>Visa i FB</button>
+  </div>
+
+  <div class="to-bar">
+    <span class="to-label">Till:</span>
+    <b id="to-name"></b>
+    <span class="to-pm" id="to-pm"></span>
+  </div>
+
+  <div class="layout">
+    <div class="left">
+      <div class="history" id="history">
+        <div class="notice">Hämtar konversationen…</div>
+      </div>
+
+      <div class="format-bar">
+        <button class="fmtbtn" id="fb-emoji" title="Känsloikoner">🙂 ▾</button>
+        <button class="fmtbtn" id="fb-wink" title="Blinkningar">😉</button>
+        <button class="fmtbtn" id="fb-heart" title="Hjärta">❤️</button>
+        <button class="fmtbtn" id="fb-thumb" title="Tummen upp">👍</button>
+      </div>
+
+      <div class="compose">
+        <textarea id="input" spellcheck="false" placeholder=""></textarea>
+        <button class="btn send" id="send" disabled>Skicka</button>
+      </div>
+      <div class="popup emoji-panel" id="emoji-panel" hidden></div>
+    </div>
+
+    <div class="right">
+      <div class="avatar big" id="their-avatar"></div>
+      <div class="spacer"></div>
+      <div class="avatar big" id="my-avatar"></div>
+    </div>
+  </div>
+
+  <div class="statusbar" id="statusbar">&nbsp;</div>
+
+  <script src="common.js"></script>
+  <script src="emoticons.js"></script>
+  <script src="chat.js"></script>
+</body>
+</html>

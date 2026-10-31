@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src * data: blob:; style-src 'self' 'unsafe-inline'">
+  <title>MinMSN</title>
+  <link rel="stylesheet" href="msn.css">
+  <link rel="stylesheet" href="contacts.css">
+</head>
+<body>
+  <div class="titlebar">
+    <span class="logo-slot"></span>
+    <span class="title">MinMSN</span>
+    <div class="winbtns">
+      <button class="winbtn" data-win="minimize" title="Minimera">_</button>
+      <button class="winbtn close" data-win="close" title="Stäng">×</button>
+    </div>
+  </div>
+
+  <div class="menubar">
+    <button id="menu-file">Arkiv</button>
+    <button id="menu-contacts">Kontakter</button>
+    <button id="menu-help">Hjälp</button>
+    <button id="notif-toggle" class="notif" title="Slå på eller av Windows-notiser">🔔 Notiser: på</button>
+  </div>
+
+  <section class="me">
+    <div class="avatar me-avatar" id="me-avatar" title="Klicka för att byta visningsbild"></div>
+    <div class="me-info">
+      <button class="me-name" id="me-name-btn">
+        <span id="me-name"></span>
+        <span class="me-status" id="me-status"></span>
+        <span class="arrow">▾</span>
+      </button>
+      <div class="pm" id="pm" contenteditable="true" spellcheck="false"></div>
+    </div>
+  </section>
+
+  <div class="popup" id="status-menu" hidden></div>
+  <div class="popup" id="file-menu" hidden>
+    <div class="item" data-action="name">Ändra visningsnamn…</div>
+    <div class="item" data-action="avatar">Byt visningsbild…</div>
+    <div class="item" data-action="facebook">Visa Facebook-fönstret</div>
+    <div class="item" data-action="diagnose">Spara felsökningsinfo</div>
+    <div class="item" data-action="quit">Avsluta</div>
+  </div>
+
+  <div class="searchbar">
+    <input id="search" type="search" placeholder="Sök efter en kontakt…" spellcheck="false">
+  </div>
+
+  <main id="list">
+    <div class="login-hint" id="login-hint">
+      <div class="big-logo"></div>
+      <p><strong>Loggar in…</strong></p>
+      <p>Logga in på Facebook i fönstret som dök upp. Dina kontakter visas här sedan.</p>
+      <button class="btn" id="show-fb">Visa inloggningsfönstret</button>
+    </div>
+  </main>
+
+  <div class="toast" id="toast" hidden></div>
+
+  <footer class="brand">
+    <span class="logo-slot"></span>
+    <span><b>Min</b>MSN</span>
+  </footer>
+
+  <input type="file" id="avatar-file" accept="image/*" hidden>
+
+  <script src="common.js"></script>
+  <script src="emoticons.js"></script>
+  <script src="contacts.js"></script>
+</body>
+</html>

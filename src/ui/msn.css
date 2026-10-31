@@ -1,0 +1,199 @@
+/*
+ * MinMSN – gemensam stil för kontaktlistan och chattfönstren.
+ * Inspirerat av MSN Messenger 7-eran: blå toner, glansiga ramar,
+ * Tahoma/Segoe UI i liten storlek. All grafik är ritad i CSS/SVG.
+ */
+
+:root {
+  --title-top: #6a9be0;
+  --title-bottom: #2a5ab4;
+  --title-text: #ffffff;
+  --frame: #7a9cd3;
+  --panel-top: #e9f1fc;
+  --panel-bottom: #c7d9f3;
+  --body: #ffffff;
+  --text: #1a1a1a;
+  --muted: #6c7a8f;
+  --link: #1d4fa1;
+  --group: #12357a;
+  --hover: #dde9fb;
+  --hover-border: #a9c4ec;
+  --select: #c3d8f8;
+  --online: #3fae2a;
+  --busy: #d93a2b;
+  --away: #f0a417;
+  --offline: #9aa3ad;
+  --font: Tahoma, "Segoe UI", Verdana, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  font: 11px/1.35 var(--font);
+  color: var(--text);
+  background: var(--panel-bottom);
+  overflow: hidden;
+  user-select: none;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #3b66b0;
+}
+
+button { font: inherit; }
+
+/* ---------- Titelrad ---------- */
+
+.titlebar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 4px 0 8px;
+  color: var(--title-text);
+  background: linear-gradient(to bottom, #8db5ec 0%, var(--title-top) 8%, var(--title-bottom) 92%, #1d4596 100%);
+  -webkit-app-region: drag;
+  flex: none;
+}
+.titlebar .title {
+  flex: 1;
+  font-weight: bold;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, .35);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.titlebar .logo { width: 18px; height: 18px; flex: none; }
+.winbtns { display: flex; gap: 2px; -webkit-app-region: no-drag; }
+.winbtn {
+  width: 22px;
+  height: 20px;
+  border: 1px solid rgba(255, 255, 255, .7);
+  border-radius: 3px;
+  color: #fff;
+  font-weight: bold;
+  line-height: 16px;
+  padding: 0;
+  cursor: pointer;
+  background: linear-gradient(to bottom, #82aef0, #3e6fc8);
+}
+.winbtn:hover { background: linear-gradient(to bottom, #a3c4f5, #5585d8); }
+.winbtn.close { background: linear-gradient(to bottom, #f0a08a, #c8462a); }
+.winbtn.close:hover { background: linear-gradient(to bottom, #f6b9a6, #dd5a3c); }
+
+/* ---------- Menyrad ---------- */
+
+.menubar {
+  display: flex;
+  gap: 2px;
+  padding: 2px 4px;
+  background: linear-gradient(to bottom, #f4f8fe, #dce8f8);
+  border-bottom: 1px solid #b4c9ea;
+  flex: none;
+}
+.menubar button {
+  border: 1px solid transparent;
+  background: none;
+  padding: 1px 6px;
+  border-radius: 2px;
+  cursor: pointer;
+}
+.menubar button:hover { background: var(--hover); border-color: var(--hover-border); }
+
+/* ---------- Glansig bildram ---------- */
+
+.avatar {
+  position: relative;
+  flex: none;
+  padding: 3px;
+  border-radius: 6px;
+  background: linear-gradient(to bottom, #ffffff, #c9dcf6 55%, #a9c3ea);
+  border: 1px solid var(--frame);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .25), inset 0 1px 0 #fff;
+}
+.avatar img, .avatar .placeholder {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 3px;
+  object-fit: cover;
+  background: linear-gradient(135deg, #bcd3f3, #eaf2fd);
+}
+.avatar .placeholder { display: flex; align-items: center; justify-content: center; }
+.avatar .placeholder svg { width: 60%; height: 60%; }
+
+/* ---------- Status-gubbe ---------- */
+
+.buddy { width: 16px; height: 16px; flex: none; }
+.buddy .head, .buddy .body { fill: var(--online); stroke: rgba(0, 0, 0, .35); stroke-width: .6; }
+.buddy .shine { fill: rgba(255, 255, 255, .55); }
+.buddy.busy .head, .buddy.busy .body { fill: var(--busy); }
+.buddy.away .head, .buddy.away .body { fill: var(--away); }
+.buddy.offline .head, .buddy.offline .body { fill: var(--offline); }
+.buddy.unread .head, .buddy.unread .body { fill: #f2c21b; }
+
+/* ---------- Rullningslister i XP-stil ---------- */
+
+::-webkit-scrollbar { width: 14px; }
+::-webkit-scrollbar-track { background: #eef3fb; border-left: 1px solid #d3e0f3; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to right, #c9daf6, #a7c1ec);
+  border: 1px solid #8eabdc;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover { background: linear-gradient(to right, #d8e5fa, #b8cff2); }
+
+/* ---------- Popupmenyer ---------- */
+
+.popup {
+  position: absolute;
+  z-index: 50;
+  background: #fff;
+  border: 1px solid #7f9db9;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, .3);
+  padding: 2px;
+}
+.popup[hidden] { display: none; }
+.popup .item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 18px 3px 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.popup .item:hover { background: #316ac5; color: #fff; }
+
+/* ---------- Knappar ---------- */
+
+.btn {
+  padding: 3px 12px;
+  border: 1px solid #5d7fb8;
+  border-radius: 3px;
+  cursor: pointer;
+  color: #10306b;
+  background: linear-gradient(to bottom, #ffffff, #e3ecf9 50%, #cfdcf2 51%, #e2ebf8);
+}
+.btn:hover { border-color: #e2a32b; box-shadow: inset 0 0 0 1px #f8d68a; }
+.btn:active { background: linear-gradient(to bottom, #cfdcf2, #e8eff9); }
+.btn:disabled { color: #8a96a8; border-color: #aab8cf; box-shadow: none; cursor: default; }
+
+.toolbtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-width: 52px;
+  padding: 3px 4px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: none;
+  cursor: pointer;
+  color: var(--group);
+}
+.toolbtn:hover { background: linear-gradient(to bottom, #fbfdff, #dce9fb); border-color: var(--hover-border); }
+.toolbtn .icon { font-size: 18px; line-height: 20px; }

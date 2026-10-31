@@ -11,6 +11,10 @@ Bygger på Electron. Programmet kör messenger.com osynligt i bakgrunden och vis
 3. Windows kan varna för en okänd utgivare. Välj "Mer info" och sedan "Kör ändå".
 4. Logga in i Facebook-fönstret som dyker upp. När du är inloggad göms det och konversationerna visas i MinMSN.
 
+## Demoläge
+
+`npm run demo` visar påhittade kontakter så att man kan titta på utseendet utan att logga in.
+
 ## Köra från källkoden (för utvecklare)
 
 ```
