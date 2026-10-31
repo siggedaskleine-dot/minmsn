@@ -52,18 +52,18 @@
   font-size: 12px;
 }
 
-.msg { margin: 0 0 6px; }
-.msg .says { color: #6d6d6d; }
-.msg .says b { font-weight: normal; }
-.msg .text {
-  margin: 1px 0 0 12px;
+.msg {
+  margin: 0 0 4px;
+  padding-left: 4px;
   white-space: pre-wrap;
   word-wrap: break-word;
-  color: #000;
   font-family: "Segoe UI", Tahoma, sans-serif;
+  line-height: 1.4;
 }
-.msg.continued .says { display: none; }
-.msg.continued { margin-top: -4px; }
+.msg .time { color: #9aa3ad; font-size: 10px; margin-right: 6px; }
+.msg .who { font-weight: bold; color: #1d4fa1; }
+.msg.mine .who { color: #b8590e; }
+.msg .text { color: #000; }
 .msg.pending .text { color: #8a8a8a; }
 
 .notice {

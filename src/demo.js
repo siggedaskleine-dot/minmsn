@@ -11,9 +11,10 @@ const conversations = [
 
 const messages = new Map([
   ['1001', [
-    { text: 'Hej! Hur är läget?', mine: false },
-    { text: 'Hej Anna! Bara bra, själv? :D', mine: true },
-    { text: 'Toppen! Ses vi ikväll? :)', mine: false },
+    { text: 'Hej! Hur är läget?', mine: false, sender: 'Anna Svensson', time: '09:18' },
+    { text: 'Hej Anna! Bara bra, själv? :D', mine: true, sender: 'Du', time: '09:19' },
+    { text: 'Toppen! Ses vi ikväll? :)', mine: false, sender: 'Anna Svensson', time: '09:20' },
+    { text: 'Ja gärna, vid sju? (Y)', mine: true, sender: 'Du', time: '09:21' },
   ]],
   ['1002', [{ text: 'Såg du matchen igår?', mine: false }, { text: 'Ja! Vilket mål (Y)', mine: true }, { text: 'Haha (Y)', mine: false }]],
 ]);

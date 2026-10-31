@@ -221,6 +221,23 @@ window.msn.onConversations((list) => {
   render();
 });
 
+// ---------- Notiser ----------
+
+let notificationsOn = true;
+function renderNotifToggle() {
+  const b = $('notif-toggle');
+  b.textContent = notificationsOn ? '🔔 Notiser: på' : '🔕 Notiser: av';
+  b.classList.toggle('off', !notificationsOn);
+}
+$('notif-toggle').addEventListener('click', (e) => {
+  e.stopPropagation();
+  window.msn.setNotifications(!notificationsOn);
+});
+window.msn.onSettings((s) => {
+  notificationsOn = s.notifications;
+  renderNotifToggle();
+});
+
 // ---------- Start ----------
 
 MSN.setupTitlebar();

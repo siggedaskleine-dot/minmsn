@@ -4,6 +4,7 @@ const $ = (id) => document.getElementById(id);
 const threadId = new URLSearchParams(location.search).get('id');
 
 let contact = { name: 'Kontakt', snippet: '', avatar: null };
+let pageTitle = null; // namnet från rubriken i Messenger
 let messages = [];
 let pending = []; // skickade men ännu inte syns i Messenger
 let lastTheirCount = null;
@@ -33,20 +34,27 @@ function myName() {
   return MSN.load('displayName', 'Jag');
 }
 
-function addLine(box, who, text, cls, prevWho) {
+function addLine(box, m, cls) {
   const div = document.createElement('div');
-  div.className = 'msg' + (cls ? ' ' + cls : '');
-  if (prevWho === who) div.classList.add('continued');
-  const says = document.createElement('div');
-  says.className = 'says';
-  const b = document.createElement('b');
-  b.textContent = who;
-  says.append(b, ' säger:');
-  const body = document.createElement('div');
+  div.className = 'msg' + (m.mine ? ' mine' : '') + (cls ? ' ' + cls : '');
+  if (m.time) {
+    const t = document.createElement('span');
+    t.className = 'time';
+    t.textContent = m.time;
+    div.appendChild(t);
+  }
+  const who = document.createElement('span');
+  who.className = 'who';
+  who.textContent = (m.mine ? myName() : m.sender || contactName()) + ':';
+  const body = document.createElement('span');
   body.className = 'text';
-  body.textContent = Emoticons.convert(text);
-  div.append(says, body);
+  body.textContent = Emoticons.convert(m.text);
+  div.append(who, ' ', body);
   box.appendChild(div);
+}
+
+function contactName() {
+  return Emoticons.convert(contact.name);
 }
 
 function renderHistory() {
@@ -59,17 +67,8 @@ function renderHistory() {
     n.textContent = 'Inga meddelanden att visa än. Skriv något!';
     box.appendChild(n);
   }
-  const them = Emoticons.convert(contact.name);
-  let prev = null;
-  for (const m of messages) {
-    const who = m.mine ? myName() : them;
-    addLine(box, who, m.text, '', prev);
-    prev = who;
-  }
-  for (const text of pending) {
-    addLine(box, myName(), text, 'pending', prev);
-    prev = myName();
-  }
+  for (const m of messages) addLine(box, m);
+  for (const text of pending) addLine(box, { text, mine: true }, 'pending');
   if (atBottom) box.scrollTop = box.scrollHeight;
 }
 
@@ -163,13 +162,24 @@ $('tb-fb').addEventListener('click', () => window.msn.showFacebook());
 window.msn.onConversations((list) => {
   const c = list.find((x) => x.id === threadId);
   if (!c) return;
-  contact = c;
+  contact = { ...c, name: pageTitle || c.name };
   renderHeader();
 });
 
 window.msn.onMessages((data) => {
   if (data.threadId !== threadId) return;
   messages = data.messages;
+  if (data.title && data.title !== pageTitle) {
+    pageTitle = data.title;
+    contact = { ...contact, name: pageTitle };
+    renderHeader();
+  } else if (!pageTitle && contact.name === 'Kontakt') {
+    const other = messages.find((m) => !m.mine && m.sender);
+    if (other) {
+      contact = { ...contact, name: other.sender };
+      renderHeader();
+    }
+  }
   // Ta bort "skickas…"-rader som nu syns i Messenger.
   const mineTexts = messages.filter((m) => m.mine).map((m) => m.text);
   pending = pending.filter((p) => !mineTexts.some((t) => t.includes(p)));

@@ -1,6 +1,6 @@
 {
   "name": "minmsn",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "MSN-liknande klient för Facebook Messenger",
   "main": "src/main.js",
   "author": "Mattias",

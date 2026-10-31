@@ -7,6 +7,8 @@ contextBridge.exposeInMainWorld('msn', {
   send: (threadId, text) => ipcRenderer.send('ui:send', { threadId, text }),
   showFacebook: () => ipcRenderer.send('ui:show-facebook'),
   diagnose: () => ipcRenderer.send('ui:diagnose'),
+  setNotifications: (on) => ipcRenderer.send('ui:set-notifications', on),
+  onSettings: (cb) => ipcRenderer.on('ui:settings', (_e, d) => cb(d)),
   onNotice: (cb) => ipcRenderer.on('ui:notice', (_e, d) => cb(d)),
   window: (action) => ipcRenderer.send('ui:window', action),
   onStatus: (cb) => ipcRenderer.on('ui:status', (_e, d) => cb(d)),

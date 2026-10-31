@@ -4,8 +4,9 @@
 //  - chatWindows: ett chattfönster per konversation, precis som i MSN
 // och skickar meddelanden mellan dem.
 
-const { app, BrowserWindow, ipcMain, session } = require('electron');
+const { app, BrowserWindow, ipcMain, session, Notification } = require('electron');
 const path = require('path');
+const fs = require('fs');
 
 const MESSENGER_URL = 'https://www.messenger.com/';
 const UI_DIR = path.join(__dirname, 'ui');
@@ -19,8 +20,59 @@ const chatWindows = new Map(); // threadId -> BrowserWindow
 const state = {
   loggedIn: false,
   conversations: [],
-  messages: new Map(), // threadId -> [{ text, mine }]
+  messages: new Map(), // threadId -> [{ text, mine, sender, time }]
 };
+
+// ---------- Inställningar (sparas mellan gångerna) ----------
+
+const settingsFile = () => path.join(app.getPath('userData'), 'settings.json');
+let settings = { notifications: true };
+
+function loadSettings() {
+  try {
+    settings = { ...settings, ...JSON.parse(fs.readFileSync(settingsFile(), 'utf8')) };
+  } catch {}
+}
+
+function saveSettings() {
+  try {
+    fs.writeFileSync(settingsFile(), JSON.stringify(settings, null, 2));
+  } catch {}
+}
+
+// ---------- Windows-notiser ----------
+
+let knownConversations = null; // id -> snippet, null tills första listan kommit
+
+function chatIsFocused(threadId) {
+  const win = chatWindows.get(threadId);
+  return !!(win && !win.isDestroyed() && win.isFocused());
+}
+
+function checkForNewMessages(list) {
+  const before = knownConversations;
+  knownConversations = new Map(list.map((c) => [c.id, c.snippet]));
+  if (!before) return; // inga notiser för det som redan fanns vid start
+
+  for (const c of list) {
+    if (!c.unread) continue;
+    if (before.get(c.id) === c.snippet) continue;
+    if (/^(Du|You):/i.test(c.snippet || '')) continue;
+    if (chatIsFocused(c.id)) continue;
+    notify(c);
+  }
+}
+
+function notify(c) {
+  if (!settings.notifications || !Notification.isSupported()) return;
+  const n = new Notification({
+    title: c.name,
+    body: c.snippet || 'Nytt meddelande',
+    silent: false,
+  });
+  n.on('click', () => openChatWindow(c.id));
+  n.show();
+}
 
 // Facebook släpper inte alltid in webbläsare som säger att de är Electron,
 // så vi presenterar oss som vanlig Chrome.
@@ -176,7 +228,6 @@ ipcMain.on('fb:status', (_e, status) => {
 });
 
 ipcMain.on('fb:diagnosis', (_e, info) => {
-  const fs = require('fs');
   const file = path.join(app.getPath('desktop'), 'minmsn-felsokning.txt');
   fs.writeFileSync(file, JSON.stringify({ version: app.getVersion(), ...info }, null, 2));
   send(contactsWindow, 'ui:notice', `Felsökningsinfo sparad på skrivbordet: ${path.basename(file)}`);
@@ -185,6 +236,7 @@ ipcMain.on('fb:diagnosis', (_e, info) => {
 ipcMain.on('ui:diagnose', () => toFb('fb:diagnose'));
 
 ipcMain.on('fb:conversations', (_e, list) => {
+  checkForNewMessages(list);
   state.conversations = list;
   toAllUi('ui:conversations', list);
 });
@@ -217,8 +269,15 @@ ipcMain.on('fb:composer-missing', (_e, { threadId }) => {
 
 // --- Från våra egna fönster ---
 
+ipcMain.on('ui:set-notifications', (_e, on) => {
+  settings.notifications = !!on;
+  saveSettings();
+  toAllUi('ui:settings', settings);
+});
+
 ipcMain.on('ui:ready', (e) => {
   const win = BrowserWindow.fromWebContents(e.sender);
+  send(win, 'ui:settings', settings);
   send(win, 'ui:status', { loggedIn: state.loggedIn });
   send(win, 'ui:conversations', state.conversations);
   if (win && win.threadId && state.messages.has(win.threadId)) {
@@ -256,7 +315,10 @@ function shake(win) {
   });
 }
 
+app.setAppUserModelId('se.mattias.minmsn'); // behövs för notiser i Windows
+
 app.whenReady().then(() => {
+  loadSettings();
   createContactsWindow();
   if (DEMO) {
     const demo = require('./demo');
@@ -271,7 +333,6 @@ app.whenReady().then(() => {
 
 // Används bara vid utveckling: sparar bilder av fönstren i demoläget.
 function screenshotDemo(dir) {
-  const fs = require('fs');
   setTimeout(() => openChatWindow('1001'), 1500);
   setTimeout(async () => {
     const shots = [['contacts', contactsWindow], ['chat', chatWindows.get('1001')]];

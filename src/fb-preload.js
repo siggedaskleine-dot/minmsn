@@ -25,18 +25,23 @@ function currentThreadId() {
   return threadIdFromHref(location.href);
 }
 
+// Länkar i Messengers meny (t.ex. "Chattar · 1 olästa") pekar också på /t/<id>,
+// så de sorteras bort.
+const NAV_LABELS = /^(Chattar|Chats|Marketplace|Förfrågningar|Message requests|Arkiv|Archive|Gemenskaper|Communities)\b/i;
+
 function readConversations() {
-  const seen = new Set();
-  const list = [];
+  const byId = new Map();
   for (const a of conversationLinks()) {
     const id = threadIdFromHref(a.href);
-    if (!id || seen.has(id)) continue;
-    seen.add(id);
+    if (!id) continue;
     const lines = (a.innerText || '')
       .split('\n')
       .map((s) => s.trim())
       .filter(Boolean);
-    if (lines.length === 0) continue;
+    if (lines.length === 0 || NAV_LABELS.test(lines[0])) continue;
+    // Samma konversation kan länkas flera gånger; behåll den med mest info.
+    const prev = byId.get(id);
+    if (prev && prev.lines.length >= lines.length) continue;
     const img = a.querySelector('img');
     // Olästa konversationer visas med fet text i Messenger.
     let unread = false;
@@ -47,7 +52,8 @@ function readConversations() {
         break;
       }
     }
-    list.push({
+    byId.set(id, {
+      lines,
       id,
       name: lines[0],
       snippet: lines.slice(1).join(' · '),
@@ -56,7 +62,7 @@ function readConversations() {
       active: id === currentThreadId(),
     });
   }
-  return list;
+  return Array.from(byId.values()).map(({ lines, ...c }) => c);
 }
 
 // Text i "löv"-element med dir="auto" är själva meddelandetexterna.
@@ -79,9 +85,35 @@ function messageContainers(main) {
   return leafTexts(main).filter((d) => !(header && header.contains(d)) && !(composer && composer.contains(d)));
 }
 
+// Messenger lägger en dold text på varje meddelande för skärmläsare, t.ex.
+// "Meddelandet skickades 09:22 av Kiia: Kom åt". Den innehåller avsändare,
+// tid och text, så den läser vi i första hand.
+const LABEL_RE =
+  /(?:Meddelandet|Message)\s+(?:har\s+)?(?:skickades|skickats|sent)\s*(?:at\s+|kl\.?\s+)?(.*?)\s+(?:av|by)\s+([^:\n]{1,80}?):\s*([\s\S]*)$/i;
+const ME = /^(Du|You)$/i;
+
+function readLabeledMessages(main) {
+  const out = [];
+  for (const leaf of leafTexts(main)) {
+    const m = (leaf.innerText || '').trim().match(LABEL_RE);
+    if (!m) continue;
+    const [, time, sender, text] = m;
+    if (!text.trim()) continue;
+    const msg = { sender: sender.trim(), time: time.trim(), text: text.trim(), mine: ME.test(sender.trim()) };
+    const last = out[out.length - 1];
+    if (last && last.sender === msg.sender && last.time === msg.time && last.text === msg.text) continue;
+    out.push(msg);
+  }
+  return out;
+}
+
 function readMessages() {
   const main = document.querySelector('[role="main"]');
   if (!main) return [];
+  const labeled = readLabeledMessages(main);
+  if (labeled.length > 0) return labeled.slice(-80);
+
+  // Reserv: gissa utifrån sidans uppbyggnad.
   const mainRect = main.getBoundingClientRect();
   const out = [];
   for (const box of messageContainers(main)) {
@@ -95,6 +127,15 @@ function readMessages() {
     out.push({ text, mine });
   }
   return out.slice(-60);
+}
+
+// Namnet på den öppna konversationen, från rubriken ovanför chatten.
+function currentTitle() {
+  const main = document.querySelector('[role="main"]');
+  if (!main) return null;
+  const h = main.querySelector('h1, h2');
+  const t = h ? h.innerText.trim().split('\n')[0] : '';
+  return t && !NAV_LABELS.test(t) ? t : null;
 }
 
 // Rutor som kräver att du gör något, t.ex. PIN-koden för krypterade chattar.
@@ -149,7 +190,7 @@ function poll() {
     ipcRenderer.send('fb:conversations', convs);
   }
 
-  const msgs = { threadId: currentThreadId(), messages: readMessages() };
+  const msgs = { threadId: currentThreadId(), title: currentTitle(), messages: readMessages() };
   const msgJson = JSON.stringify(msgs);
   if (msgJson !== lastMessages) {
     lastMessages = msgJson;

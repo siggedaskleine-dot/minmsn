@@ -152,3 +152,6 @@
   flex: none;
 }
 .toast[hidden] { display: none; }
+
+.menubar .notif { margin-left: auto; color: #12357a; }
+.menubar .notif.off { color: #8a96a8; }
