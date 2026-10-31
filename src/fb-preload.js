@@ -100,19 +100,37 @@ function poll() {
   }
 }
 
-ipcRenderer.on('fb:open-conversation', (_e, id) => {
+function openConversation(id) {
+  if (currentThreadId() === id) return;
   const link = conversationLinks().find((a) => threadIdFromHref(a.href) === id);
   if (link) link.click();
   else location.href = `https://www.messenger.com/t/${id}/`;
   lastMessages = '';
-});
+}
 
-ipcRenderer.on('fb:prepare-send', (_e, { text }) => {
-  const box =
+function findComposer() {
+  return (
     document.querySelector('[role="main"] [contenteditable="true"][role="textbox"]') ||
-    document.querySelector('[contenteditable="true"][role="textbox"]');
+    document.querySelector('[contenteditable="true"][role="textbox"]')
+  );
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+ipcRenderer.on('fb:open-conversation', (_e, id) => openConversation(id));
+
+// Byt till rätt konversation, vänta tills skrivfältet finns, och be
+// huvudprocessen skriva in texten.
+ipcRenderer.on('fb:prepare-send', async (_e, { threadId, text }) => {
+  openConversation(threadId);
+  let box = null;
+  for (let i = 0; i < 40; i++) {
+    if (currentThreadId() === threadId) box = findComposer();
+    if (box) break;
+    await sleep(150);
+  }
   if (!box) {
-    ipcRenderer.send('fb:composer-missing');
+    ipcRenderer.send('fb:composer-missing', { threadId });
     return;
   }
   box.focus();
