@@ -1,0 +1,31 @@
+/* Steg 1: enkel och funktionell. MSN-utseendet kommer i steg 2. */
+* { box-sizing: border-box; }
+body { margin: 0; font: 13px "Segoe UI", Tahoma, sans-serif; height: 100vh; display: flex; flex-direction: column; background: #eef3fa; }
+header { display: flex; gap: 12px; align-items: center; padding: 8px 12px; background: #2f6fbf; color: #fff; }
+header button { margin-left: auto; }
+#status { opacity: .9; }
+main { flex: 1; display: flex; min-height: 0; }
+aside { width: 260px; border-right: 1px solid #b9c9e0; overflow-y: auto; background: #fff; }
+h2 { font-size: 13px; margin: 0; padding: 8px 12px; background: #dbe6f5; color: #1d3f72; }
+ul { list-style: none; margin: 0; padding: 0; }
+li { display: flex; gap: 8px; align-items: center; padding: 6px 10px; cursor: pointer; border-bottom: 1px solid #eef; }
+li:hover { background: #eef4ff; }
+li.active { background: #d5e4fb; }
+li.unread .name { font-weight: bold; }
+li.empty { color: #777; cursor: default; }
+li img { width: 32px; height: 32px; border-radius: 4px; object-fit: cover; }
+.name { display: block; }
+.snippet { display: block; color: #666; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 190px; }
+#chat { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; }
+#messages { flex: 1; overflow-y: auto; padding: 10px 14px; background: #fff; }
+.msg { margin: 4px 0; white-space: pre-wrap; word-wrap: break-word; }
+.msg.mine { color: #555; }
+.msg .who { font-weight: bold; color: #1d3f72; }
+.msg.mine .who { color: #777; }
+#error { background: #fde8e8; color: #8a1c1c; padding: 6px 12px; }
+#composer { display: flex; gap: 6px; padding: 8px; border-top: 1px solid #b9c9e0; }
+#composer input { flex: 1; padding: 6px; font: inherit; }
+#emoji-panel { position: absolute; bottom: 48px; right: 70px; background: #fff; border: 1px solid #b9c9e0; padding: 6px; display: grid; grid-template-columns: repeat(8, 28px); gap: 2px; box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+#emoji-panel[hidden] { display: none; }
+#emoji-panel button { border: 0; background: none; font-size: 18px; cursor: pointer; }
+#emoji-panel button:hover { background: #eef4ff; }
