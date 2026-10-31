@@ -123,6 +123,7 @@ $('file-menu').addEventListener('click', (e) => {
   if (action === 'name') editName();
   if (action === 'avatar') pickAvatar();
   if (action === 'facebook') window.msn.showFacebook();
+  if (action === 'diagnose') window.msn.diagnose();
   if (action === 'quit') window.msn.window('close');
 });
 
@@ -208,6 +209,13 @@ document.addEventListener('keydown', (e) => {
 window.msn.onStatus(({ loggedIn }) => {
   $('login-hint').querySelector('strong').textContent = loggedIn ? 'Hämtar kontakter…' : 'Loggar in…';
 });
+window.msn.onNotice((text) => {
+  const t = $('toast');
+  t.textContent = text;
+  t.hidden = false;
+  setTimeout(() => (t.hidden = true), 6000);
+});
+
 window.msn.onConversations((list) => {
   conversations = list;
   render();

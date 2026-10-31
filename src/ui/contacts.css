@@ -141,3 +141,14 @@
   flex: none;
 }
 .brand .logo { width: 20px; height: 20px; }
+
+.toast {
+  margin: 0 6px 6px;
+  padding: 6px 8px;
+  background: #fffbe0;
+  border: 1px solid #e3c86a;
+  border-radius: 3px;
+  color: #5a4a10;
+  flex: none;
+}
+.toast[hidden] { display: none; }

@@ -141,12 +141,48 @@ function demoFb(channel, data) {
 
 // --- Från Facebook-fönstret ---
 
+// Facebook-fönstret göms först när du är inloggad OCH inte har någon ruta
+// att fylla i (t.ex. PIN-koden för att återställa krypterade chattar).
+// Dyker en sådan ruta upp senare visas fönstret igen.
+let hideTimer = null;
 ipcMain.on('fb:status', (_e, status) => {
-  if (status.loggedIn === state.loggedIn) return;
-  state.loggedIn = status.loggedIn;
-  if (state.loggedIn) fbWindow.hide();
-  toAllUi('ui:status', { loggedIn: state.loggedIn });
+  if (status.loggedIn !== state.loggedIn) {
+    state.loggedIn = status.loggedIn;
+    toAllUi('ui:status', { loggedIn: state.loggedIn });
+  }
+  if (!fbWindow || fbWindow.isDestroyed()) return;
+
+  if (status.needsAttention) {
+    clearTimeout(hideTimer);
+    hideTimer = null;
+    if (!fbWindow.isVisible()) {
+      fbWindow.show();
+      fbWindow.focus();
+    }
+    fbWindow.autoShown = true;
+    return;
+  }
+
+  const shouldHide = status.loggedIn && (fbWindow.autoShown || !state.hiddenOnce);
+  if (shouldHide && fbWindow.isVisible() && !hideTimer) {
+    // Vänta lite, så att en ruta som håller på att laddas hinner dyka upp.
+    hideTimer = setTimeout(() => {
+      hideTimer = null;
+      fbWindow.hide();
+      fbWindow.autoShown = false;
+      state.hiddenOnce = true;
+    }, 4000);
+  }
 });
+
+ipcMain.on('fb:diagnosis', (_e, info) => {
+  const fs = require('fs');
+  const file = path.join(app.getPath('desktop'), 'minmsn-felsokning.txt');
+  fs.writeFileSync(file, JSON.stringify({ version: app.getVersion(), ...info }, null, 2));
+  send(contactsWindow, 'ui:notice', `Felsökningsinfo sparad på skrivbordet: ${path.basename(file)}`);
+});
+
+ipcMain.on('ui:diagnose', () => toFb('fb:diagnose'));
 
 ipcMain.on('fb:conversations', (_e, list) => {
   state.conversations = list;

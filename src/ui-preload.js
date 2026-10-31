@@ -6,6 +6,8 @@ contextBridge.exposeInMainWorld('msn', {
   openChat: (threadId) => ipcRenderer.send('ui:open-chat', threadId),
   send: (threadId, text) => ipcRenderer.send('ui:send', { threadId, text }),
   showFacebook: () => ipcRenderer.send('ui:show-facebook'),
+  diagnose: () => ipcRenderer.send('ui:diagnose'),
+  onNotice: (cb) => ipcRenderer.on('ui:notice', (_e, d) => cb(d)),
   window: (action) => ipcRenderer.send('ui:window', action),
   onStatus: (cb) => ipcRenderer.on('ui:status', (_e, d) => cb(d)),
   onConversations: (cb) => ipcRenderer.on('ui:conversations', (_e, d) => cb(d)),

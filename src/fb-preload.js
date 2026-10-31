@@ -59,30 +59,87 @@ function readConversations() {
   return list;
 }
 
+// Text i "löv"-element med dir="auto" är själva meddelandetexterna.
+function leafTexts(el) {
+  const leaves = Array.from(el.querySelectorAll('[dir="auto"]')).filter(
+    (d) => !d.querySelector('[dir="auto"]') && !d.closest('[contenteditable="true"]')
+  );
+  return leaves;
+}
+
+function messageContainers(main) {
+  // Messenger har bytt struktur flera gånger, så vi provar i tur och ordning.
+  for (const sel of ['[role="row"]', '[role="gridcell"]', '[data-testid*="message"]']) {
+    const found = Array.from(main.querySelectorAll(sel)).filter((el) => leafTexts(el).length > 0);
+    if (found.length > 0) return found;
+  }
+  // Sista utvägen: varje textlöv i chattytan är ett eget meddelande.
+  const composer = main.querySelector('[contenteditable="true"]');
+  const header = main.querySelector('[role="banner"], h1, h2');
+  return leafTexts(main).filter((d) => !(header && header.contains(d)) && !(composer && composer.contains(d)));
+}
+
 function readMessages() {
   const main = document.querySelector('[role="main"]');
   if (!main) return [];
-  const rows = Array.from(main.querySelectorAll('[role="row"]'));
   const mainRect = main.getBoundingClientRect();
   const out = [];
-  for (const row of rows) {
-    const text = (row.innerText || '').trim();
+  for (const box of messageContainers(main)) {
+    const leaves = box.matches('[dir="auto"]') ? [box] : leafTexts(box);
+    const text = leaves.map((d) => d.innerText.trim()).filter(Boolean).join('\n');
     if (!text) continue;
     // Egna meddelanden ligger till höger i Messenger.
-    const bubble = row.querySelector('[dir="auto"]');
-    let mine = false;
-    if (bubble) {
-      const r = bubble.getBoundingClientRect();
-      mine = r.left + r.width / 2 > mainRect.left + mainRect.width / 2;
-    }
+    const r = leaves[leaves.length - 1].getBoundingClientRect();
+    const mine = r.width > 0 && r.left + r.width / 2 > mainRect.left + mainRect.width / 2;
+    if (out.length && out[out.length - 1].text === text) continue;
     out.push({ text, mine });
   }
   return out.slice(-60);
 }
 
+// Rutor som kräver att du gör något, t.ex. PIN-koden för krypterade chattar.
+function needsAttention() {
+  for (const d of document.querySelectorAll('[role="dialog"], [role="alertdialog"]')) {
+    if (d.offsetParent === null && getComputedStyle(d).position !== 'fixed') continue;
+    if (d.querySelector('input, [contenteditable="true"]')) return true;
+    if (/PIN|krypter|encrypt|återställ|restore|säkerhetskop|backup/i.test(d.innerText || '')) return true;
+  }
+  return false;
+}
+
+// Felsökning: beskriver sidans struktur utan att ta med några meddelandetexter.
+function diagnose() {
+  const main = document.querySelector('[role="main"]');
+  const count = (sel, root = document) => root.querySelectorAll(sel).length;
+  return {
+    url: location.pathname.replace(/\/t\/[^/]+/, '/t/<id>'),
+    loggedIn: conversationLinks().length > 0,
+    needsAttention: needsAttention(),
+    conversations: conversationLinks().length,
+    dialogs: count('[role="dialog"]'),
+    main: !!main,
+    rowsInMain: main ? count('[role="row"]', main) : 0,
+    gridcellsInMain: main ? count('[role="gridcell"]', main) : 0,
+    dirAutoInMain: main ? count('[dir="auto"]', main) : 0,
+    textboxes: count('[contenteditable="true"][role="textbox"]'),
+    messagesRead: readMessages().length,
+    roles: main
+      ? Object.entries(
+          Array.from(main.querySelectorAll('[role]')).reduce((acc, el) => {
+            const r = el.getAttribute('role');
+            acc[r] = (acc[r] || 0) + 1;
+            return acc;
+          }, {})
+        )
+      : [],
+  };
+}
+
+ipcRenderer.on('fb:diagnose', () => ipcRenderer.send('fb:diagnosis', diagnose()));
+
 function poll() {
   const loggedIn = conversationLinks().length > 0;
-  ipcRenderer.send('fb:status', { loggedIn });
+  ipcRenderer.send('fb:status', { loggedIn, needsAttention: needsAttention() });
   if (!loggedIn) return;
 
   const convs = readConversations();
