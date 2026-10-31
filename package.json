@@ -1,0 +1,32 @@
+{
+  "name": "minmsn",
+  "version": "0.1.0",
+  "description": "MSN-liknande klient för Facebook Messenger",
+  "main": "src/main.js",
+  "author": "Mattias",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "check": "node --check src/main.js && node --check src/fb-preload.js && node --check src/ui-preload.js && node --check src/ui/app.js",
+    "dist": "electron-builder --win portable --publish never"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "se.mattias.minmsn",
+    "productName": "MinMSN",
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "portable"
+    },
+    "portable": {
+      "artifactName": "MinMSN-${version}.exe"
+    }
+  }
+}
